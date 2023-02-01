@@ -1,5 +1,17 @@
 package org.firstinspires.ftc.teamcode.drive;
 
+import static org.firstinspires.ftc.teamcode.drive.Constants.MAX_ACCEL;
+import static org.firstinspires.ftc.teamcode.drive.Constants.MAX_ANG_ACCEL;
+import static org.firstinspires.ftc.teamcode.drive.Constants.MAX_ANG_VEL;
+import static org.firstinspires.ftc.teamcode.drive.Constants.MAX_VEL;
+import static org.firstinspires.ftc.teamcode.drive.Constants.MOTOR_VELO_PID;
+import static org.firstinspires.ftc.teamcode.drive.Constants.RUN_USING_ENCODER;
+import static org.firstinspires.ftc.teamcode.drive.Constants.TRACK_WIDTH;
+import static org.firstinspires.ftc.teamcode.drive.Constants.encoderTicksToInches;
+import static org.firstinspires.ftc.teamcode.drive.Constants.kA;
+import static org.firstinspires.ftc.teamcode.drive.Constants.kStatic;
+import static org.firstinspires.ftc.teamcode.drive.Constants.kV;
+
 import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.config.Config;
@@ -19,11 +31,15 @@ import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryAcceleration
 import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryVelocityConstraint;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 
@@ -37,27 +53,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_ACCEL;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_ANG_ACCEL;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_ANG_VEL;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_VEL;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MOTOR_VELO_PID;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.RUN_USING_ENCODER;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.TRACK_WIDTH;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.encoderTicksToInches;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kA;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kStatic;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kV;
-
 /*
- * Simple mecanum drive hardware implementation for REV hardware.
+ * Simple omni drive hardware implementation for REV hardware.
+ * Reference https://docs.google.com/drawings/d/1dyEoo9V6t5scoYsqh9Jt6KEWLwc8y0T2aWik1bM3mcI
  */
 @Config
-public class SampleMecanumDrive extends MecanumDrive {
-    public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(0, 0, 0);
-    public static PIDCoefficients HEADING_PID = new PIDCoefficients(0, 0, 0);
+public class Jeb extends MecanumDrive {
+    public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(8, 0, 0);
+    public static PIDCoefficients HEADING_PID = new PIDCoefficients(8, 0, 0);
 
-    public static double LATERAL_MULTIPLIER = 1;
+    public static double LATERAL_MULTIPLIER = 32.136720744799675/31.9 * 55.122752225442284/57.0;
 
     public static double VX_WEIGHT = 1;
     public static double VY_WEIGHT = 1;
@@ -70,13 +75,27 @@ public class SampleMecanumDrive extends MecanumDrive {
 
     private TrajectoryFollower follower;
 
-    private DcMotorEx leftFront, leftRear, rightRear, rightFront;
+    private DcMotorEx left, back, right, front;
     private List<DcMotorEx> motors;
+
+    public DcMotorEx slideMotor;
+    public CRServo clawServoA, clawServoB;
+    public TouchSensor limitSlide;
+    public DistanceSensor intakeDistanceSensor, distanceSensorLeft, distanceSensorBack;
+
 
     private IMU imu;
     private VoltageSensor batteryVoltageSensor;
 
-    public SampleMecanumDrive(HardwareMap hardwareMap) {
+    private enum RunMode {
+        TELEOP,
+        AUTO,
+    }
+
+    public RunMode runMode = RunMode.TELEOP;
+
+    public Jeb(HardwareMap hardwareMap) {
+        //region Omni Drive
         super(kV, kA, kStatic, TRACK_WIDTH, TRACK_WIDTH, LATERAL_MULTIPLIER);
 
         follower = new HolonomicPIDVAFollower(TRANSLATIONAL_PID, TRANSLATIONAL_PID, HEADING_PID,
@@ -99,12 +118,18 @@ public class SampleMecanumDrive extends MecanumDrive {
                 RevHubOrientationOnRobot.UsbFacingDirection.FORWARD));
         imu.initialize(parameters);
 
-        leftFront = hardwareMap.get(DcMotorEx.class, "left");
-        leftRear = hardwareMap.get(DcMotorEx.class, "back");
-        rightRear = hardwareMap.get(DcMotorEx.class, "right");
-        rightFront = hardwareMap.get(DcMotorEx.class, "front");
+        left = hardwareMap.get(DcMotorEx.class, "left");
+        back = hardwareMap.get(DcMotorEx.class, "back");
+        right = hardwareMap.get(DcMotorEx.class, "right");
+        front = hardwareMap.get(DcMotorEx.class, "front");
+        if (runMode == RunMode.TELEOP) {
+            left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            back.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            front.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        }
 
-        motors = Arrays.asList(leftFront, leftRear, rightRear, rightFront);
+        motors = Arrays.asList(left, back, right, front);
 
         for (DcMotorEx motor : motors) {
             MotorConfigurationType motorConfigurationType = motor.getMotorType().clone();
@@ -123,13 +148,30 @@ public class SampleMecanumDrive extends MecanumDrive {
         }
 
         // TODO: reverse any motors using DcMotor.setDirection()
+//        back.setDirection(DcMotorSimple.Direction.REVERSE);
+//        right.setDirection(DcMotorSimple.Direction.REVERSE);
+//        front.setDirection(DcMotorSimple.Direction.REVERSE);
+        left.setDirection(DcMotorSimple.Direction.REVERSE);
+        back.setDirection(DcMotorSimple.Direction.REVERSE);
 
         // TODO: if desired, use setLocalizer() to change the localization method
         // for instance, setLocalizer(new ThreeTrackingWheelLocalizer(...));
 
         trajectorySequenceRunner = new TrajectorySequenceRunner(follower, HEADING_PID);
+        //endregion
+        //region Hardware
+        slideMotor = hardwareMap.get(DcMotorEx.class, "slide");
+        clawServoA = hardwareMap.get(CRServo.class, "claw A");
+        clawServoB = hardwareMap.get(CRServo.class, "claw B");
+
+        limitSlide = hardwareMap.get(TouchSensor.class, "slide");
+
+        intakeDistanceSensor = hardwareMap.get(DistanceSensor.class, "intake sensor");
+        distanceSensorBack = hardwareMap.get(DistanceSensor.class, "back");
+        //endregion
     }
 
+    //region Omni Drive
     public TrajectoryBuilder trajectoryBuilder(Pose2d startPose) {
         return new TrajectoryBuilder(startPose, VEL_CONSTRAINT, ACCEL_CONSTRAINT);
     }
@@ -268,10 +310,10 @@ public class SampleMecanumDrive extends MecanumDrive {
 
     @Override
     public void setMotorPowers(double v, double v1, double v2, double v3) {
-        leftFront.setPower(v);
-        leftRear.setPower(v1);
-        rightRear.setPower(v2);
-        rightFront.setPower(v3);
+        left.setPower(v);
+        back.setPower(v1);
+        right.setPower(v2);
+        front.setPower(v3);
     }
 
     @Override
@@ -294,4 +336,25 @@ public class SampleMecanumDrive extends MecanumDrive {
     public static TrajectoryAccelerationConstraint getAccelerationConstraint(double maxAccel) {
         return new ProfileAccelerationConstraint(maxAccel);
     }
+    //endregion
+
+    //region Jeb Functions
+
+    public void stopAllDriveMotors() {
+        front.setVelocity(0);
+        left.setVelocity(0);
+        back.setVelocity(0);
+        right.setVelocity(0);
+    }
+
+    public void gyroDrive(double powerX, double powerY, double orientation) {
+        double drive_direction = orientation - getRawExternalHeading();
+        front.setVelocity((powerX + (drive_direction * Constants.POWER_PER_P)) * Constants.TICKS_PER_POWER);
+        left.setVelocity((powerY - (drive_direction * Constants.POWER_PER_P)) * Constants.TICKS_PER_POWER);
+        back.setVelocity((powerX - (drive_direction * Constants.POWER_PER_P)) * Constants.TICKS_PER_POWER);
+        right.setVelocity((powerY + (drive_direction * Constants.POWER_PER_P)) * Constants.TICKS_PER_POWER);
+    }
+
+    //endregion
+
 }

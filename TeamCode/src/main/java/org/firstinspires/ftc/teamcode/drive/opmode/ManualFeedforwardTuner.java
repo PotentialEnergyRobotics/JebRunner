@@ -1,11 +1,11 @@
 package org.firstinspires.ftc.teamcode.drive.opmode;
 
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_ACCEL;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_VEL;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.RUN_USING_ENCODER;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kA;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kStatic;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kV;
+import static org.firstinspires.ftc.teamcode.drive.Constants.MAX_ACCEL;
+import static org.firstinspires.ftc.teamcode.drive.Constants.MAX_VEL;
+import static org.firstinspires.ftc.teamcode.drive.Constants.RUN_USING_ENCODER;
+import static org.firstinspires.ftc.teamcode.drive.Constants.kA;
+import static org.firstinspires.ftc.teamcode.drive.Constants.kStatic;
+import static org.firstinspires.ftc.teamcode.drive.Constants.kV;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
@@ -21,7 +21,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.drive.OmniDrive;
+import org.firstinspires.ftc.teamcode.drive.Jeb;
 
 import java.util.Objects;
 
@@ -47,7 +47,7 @@ public class ManualFeedforwardTuner extends LinearOpMode {
 
     private FtcDashboard dashboard = FtcDashboard.getInstance();
 
-    private OmniDrive drive;
+    private Jeb drive;
 
     enum Mode {
         DRIVER_MODE,
@@ -71,7 +71,7 @@ public class ManualFeedforwardTuner extends LinearOpMode {
 
         Telemetry telemetry = new MultipleTelemetry(this.telemetry, dashboard.getTelemetry());
 
-        drive = new OmniDrive(hardwareMap);
+        drive = new Jeb(hardwareMap);
 
         mode = Mode.TUNING_MODE;
 

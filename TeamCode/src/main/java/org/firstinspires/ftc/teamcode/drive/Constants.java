@@ -17,7 +17,7 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
  * and op modes themselves.
  */
 @Config
-public class DriveConstants {
+public class Constants {
     // voltage compensated kF 14.834777618422862
 
     /*
@@ -93,6 +93,35 @@ public class DriveConstants {
     public static double MAX_ANG_VEL = Math.toRadians(140.25002251507732);
     public static double MAX_ANG_ACCEL = Math.toRadians(184.02607784577722);
 
+    //region Jeb Constants
+    public static final int ARM_TPS = 50;
+    public static final int MOVE_TPS = 900;
+
+    public static final double DEFAULT_ARM_POWER = 0.4;
+    public static final double MIN_ARM_POWER = 0.2;
+    public static final double DEFAULT_DRIVE_POWER = 0.4;
+    public static final double MIN_DRIVE_POWER = 0.2;
+    public static final double ARM_DRIVE_POWER = 0.2;
+
+    public static final int MIN_ARM_BAG_POS = -7180;
+    public static final int MAX_ARM_BAG_POS = 0;
+    public static final int MIN_ARM_SLIDE_POS = 0;
+    public static final int MAX_ARM_SLIDE_POS = 3500;
+
+    public static final int PICKUP_ARM_POS = 450;
+    public static final int LOW_ARM_POS = 2500;
+    public static final int MID_ARM_POS = 4120;
+    public static final int HIGH_ARM_POS = 6000;
+
+    public static final double POWER_PER_P = 0.01;
+
+    public static final int SLIDE_VEL = 1500;
+
+    public static final double TICKS_PER_POWER = 537.7 * 312 / 60; // ppr * rpm / (seconds per min)
+    public static final double TICKS_PER_CM = 24.97406315350325;
+    public static final double CM_PER_INCH = 2.54;
+    public static final double CM_PER_TILE = 60.325;
+    //endregion
 
     public static double encoderTicksToInches(double ticks) {
         return WHEEL_RADIUS * 2 * Math.PI * GEAR_RATIO * ticks / TICKS_PER_REV;
