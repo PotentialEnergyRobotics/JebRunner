@@ -21,6 +21,7 @@ import com.acmerobotics.roadrunner.drive.MecanumDrive;
 import com.acmerobotics.roadrunner.followers.HolonomicPIDVAFollower;
 import com.acmerobotics.roadrunner.followers.TrajectoryFollower;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.acmerobotics.roadrunner.trajectory.TrajectoryBuilder;
 import com.acmerobotics.roadrunner.trajectory.constraints.AngularVelocityConstraint;
@@ -43,6 +44,7 @@ import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 
+import org.apache.commons.math3.analysis.function.Pow;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuilder;
@@ -58,7 +60,7 @@ import java.util.List;
  * Reference https://docs.google.com/drawings/d/1dyEoo9V6t5scoYsqh9Jt6KEWLwc8y0T2aWik1bM3mcI
  */
 @Config
-public class Jeb extends MecanumDrive {
+public class JebRunner extends MecanumDrive {
     public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(8, 0, 0);
     public static PIDCoefficients HEADING_PID = new PIDCoefficients(8, 0, 0);
 
@@ -81,20 +83,12 @@ public class Jeb extends MecanumDrive {
     public DcMotorEx slideMotor;
     public CRServo clawServoA, clawServoB;
     public TouchSensor limitSlide;
-    public DistanceSensor intakeDistanceSensor, distanceSensorLeft, distanceSensorBack;
-
+    public DistanceSensor intakeDistanceSensor, distanceSensorBack;
 
     private IMU imu;
     private VoltageSensor batteryVoltageSensor;
 
-    private enum RunMode {
-        TELEOP,
-        AUTO,
-    }
-
-    public RunMode runMode = RunMode.TELEOP;
-
-    public Jeb(HardwareMap hardwareMap) {
+    public JebRunner(HardwareMap hardwareMap) {
         //region Omni Drive
         super(kV, kA, kStatic, TRACK_WIDTH, TRACK_WIDTH, LATERAL_MULTIPLIER);
 
@@ -109,25 +103,16 @@ public class Jeb extends MecanumDrive {
             module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
         }
 
-        // TODO: adjust the names of the following hardware devices to match your configuration
         imu = hardwareMap.get(IMU.class, "imu");
-        // TODO: Adjust the orientations here to match your robot. See the FTC SDK documentation for
-        // details
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
                 RevHubOrientationOnRobot.LogoFacingDirection.UP,
-                RevHubOrientationOnRobot.UsbFacingDirection.FORWARD));
+                RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD));
         imu.initialize(parameters);
 
         left = hardwareMap.get(DcMotorEx.class, "left");
         back = hardwareMap.get(DcMotorEx.class, "back");
         right = hardwareMap.get(DcMotorEx.class, "right");
         front = hardwareMap.get(DcMotorEx.class, "front");
-        if (runMode == RunMode.TELEOP) {
-            left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            back.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            front.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        }
 
         motors = Arrays.asList(left, back, right, front);
 
@@ -147,10 +132,6 @@ public class Jeb extends MecanumDrive {
             setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, MOTOR_VELO_PID);
         }
 
-        // TODO: reverse any motors using DcMotor.setDirection()
-//        back.setDirection(DcMotorSimple.Direction.REVERSE);
-//        right.setDirection(DcMotorSimple.Direction.REVERSE);
-//        front.setDirection(DcMotorSimple.Direction.REVERSE);
         left.setDirection(DcMotorSimple.Direction.REVERSE);
         back.setDirection(DcMotorSimple.Direction.REVERSE);
 
@@ -341,18 +322,16 @@ public class Jeb extends MecanumDrive {
     //region Jeb Functions
 
     public void stopAllDriveMotors() {
-        front.setVelocity(0);
-        left.setVelocity(0);
-        back.setVelocity(0);
-        right.setVelocity(0);
+        setWeightedDrivePower(new Pose2d(0,0,0));
+        update();
     }
 
     public void gyroDrive(double powerX, double powerY, double orientation) {
         double drive_direction = orientation - getRawExternalHeading();
-        front.setVelocity((powerX + (drive_direction * Constants.POWER_PER_P)) * Constants.TICKS_PER_POWER);
-        left.setVelocity((powerY - (drive_direction * Constants.POWER_PER_P)) * Constants.TICKS_PER_POWER);
-        back.setVelocity((powerX - (drive_direction * Constants.POWER_PER_P)) * Constants.TICKS_PER_POWER);
-        right.setVelocity((powerY + (drive_direction * Constants.POWER_PER_P)) * Constants.TICKS_PER_POWER);
+        // Rotate 45 degrees to transform Omni -> Mecanum
+        Vector2d mec = new Vector2d(powerX, powerY).rotated(Math.toRadians(45));
+        setWeightedDrivePower(new Pose2d(mec.getX(), mec.getY(), drive_direction));
+        update();
     }
 
     //endregion

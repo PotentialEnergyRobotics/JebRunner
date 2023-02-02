@@ -21,7 +21,7 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.drive.Jeb;
+import org.firstinspires.ftc.teamcode.drive.JebRunner;
 
 import java.util.List;
 
@@ -79,7 +79,7 @@ public class DriveVelocityPIDTuner extends LinearOpMode {
 
         Telemetry telemetry = new MultipleTelemetry(this.telemetry, FtcDashboard.getInstance().getTelemetry());
 
-        Jeb drive = new Jeb(hardwareMap);
+        JebRunner drive = new JebRunner(hardwareMap);
 
 //        Mode mode = Mode.TUNING_MODE;
 

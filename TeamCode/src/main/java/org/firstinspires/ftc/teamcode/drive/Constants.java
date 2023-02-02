@@ -35,7 +35,7 @@ public class Constants {
      * from DriveVelocityPIDTuner.
      */
     public static final boolean RUN_USING_ENCODER = true;
-    public static PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(40, 0, 15,
+    public static PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(40, 0, 9,
             15.35);
 
     /*
@@ -88,13 +88,17 @@ public class Constants {
      * You are free to raise this on your own if you would like. It is best determined through experimentation.
      
      */
-    public static double MAX_VEL = 38.69921064314256;
-    public static double MAX_ACCEL = 52.48180821614297;
-    public static double MAX_ANG_VEL = Math.toRadians(140.25002251507732);
-    public static double MAX_ANG_ACCEL = Math.toRadians(184.02607784577722);
+//    public static double MAX_VEL = 38.69921064314256;
+//    public static double MAX_ACCEL = 52.48180821614297;
+//    public static double MAX_ANG_VEL = Math.toRadians(140.25002251507732);
+//    public static double MAX_ANG_ACCEL = Math.toRadians(184.02607784577722);
+    public static double MAX_VEL = 28;
+    public static double MAX_ACCEL = 28;
+    public static double MAX_ANG_VEL = Math.toRadians(120);
+    public static double MAX_ANG_ACCEL = Math.toRadians(120);
 
-    //region Jeb Constants
-    public static final int ARM_TPS = 50;
+    //region JebRunner Constants
+    public static final int ARM_TPS = 1500;
     public static final int MOVE_TPS = 900;
 
     public static final double DEFAULT_ARM_POWER = 0.4;
@@ -103,8 +107,6 @@ public class Constants {
     public static final double MIN_DRIVE_POWER = 0.2;
     public static final double ARM_DRIVE_POWER = 0.2;
 
-    public static final int MIN_ARM_BAG_POS = -7180;
-    public static final int MAX_ARM_BAG_POS = 0;
     public static final int MIN_ARM_SLIDE_POS = 0;
     public static final int MAX_ARM_SLIDE_POS = 3500;
 
