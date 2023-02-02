@@ -101,6 +101,7 @@ public class Constants {
     public static final int ARM_TPS = 1500;
     public static final int MOVE_TPS = 900;
 
+    public static final int INTAKE_CONE_DISTANCE = 8;
     public static final double DEFAULT_ARM_POWER = 0.4;
     public static final double MIN_ARM_POWER = 0.2;
     public static final double DEFAULT_DRIVE_POWER = 0.4;

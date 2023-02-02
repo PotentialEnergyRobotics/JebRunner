@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.auto.opmode;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
+import com.acmerobotics.roadrunner.trajectory.MarkerCallback;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -45,7 +46,9 @@ public class RRTesting extends OpMode {
         Pose2d motion4StartPose = new Pose2d(-16, -24, Math.toRadians(45));
         trajectories.add(drive.trajectorySequenceBuilder(motion4StartPose)
                 .setTangent(Math.toRadians(90))
-                .waitSeconds(3)
+                .addDisplacementMarker(2, () -> {
+                    drive.slideMotor.setPower(-Constants.MIN_ARM_POWER);
+                })
                 .splineTo(new Vector2d(-24,-15), Math.toRadians(180))
                 .splineToSplineHeading(new Pose2d(-60,-12, Math.toRadians(225)), Math.toRadians(180))
                 .build());
@@ -121,7 +124,7 @@ public class RRTesting extends OpMode {
         motions.add(new Motion() {
             @Override
             public boolean isEnd() {
-                return true;
+                return drive.limitSlide.isPressed() || drive.intakeDistanceSensor.getDistance(DistanceUnit.CM) < Constants.INTAKE_CONE_DISTANCE;
             }
 
             @Override
