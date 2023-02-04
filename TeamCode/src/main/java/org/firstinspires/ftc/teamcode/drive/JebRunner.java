@@ -45,7 +45,11 @@ import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 
 import org.apache.commons.math3.analysis.function.Pow;
+import org.firstinspires.ftc.robotcore.external.ClassFactory;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.CameraName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
+import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuilder;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceRunner;
@@ -320,6 +324,26 @@ public class JebRunner extends MecanumDrive {
     //endregion
 
     //region Jeb Functions
+
+    public VuforiaLocalizer initVuforia(HardwareMap hardwareMap, CameraName...webcams) {
+        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
+        parameters.vuforiaLicenseKey = Constants.VUFORIA_KEY;
+        parameters.cameraName = ClassFactory.getInstance().getCameraManager().nameForSwitchableCamera(webcams); // camera switching
+
+        return ClassFactory.getInstance().createVuforia(parameters);
+    }
+
+    public TFObjectDetector initTfod(HardwareMap hardwareMap, VuforiaLocalizer vulo) {
+        int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
+                "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+
+        TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
+        tfodParameters.minResultConfidence = Constants.MIN_RESULT_CONFIDENCE;
+        tfodParameters.isModelTensorFlow2 = true;
+        tfodParameters.inputSize = Constants.TFOD_INPUT_SIZE;
+
+        return ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vulo);
+    }
 
     public void stopAllDriveMotors() {
         setWeightedDrivePower(new Pose2d(0,0,0));
