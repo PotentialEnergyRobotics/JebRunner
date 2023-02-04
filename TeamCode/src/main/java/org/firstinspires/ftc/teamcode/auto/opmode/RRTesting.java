@@ -81,7 +81,7 @@ public class RRTesting extends OpMode {
         trajectories.add(drive.trajectorySequenceBuilder(trajectories.get(1).end())
                 .setTangent(Math.toRadians(0))
                 .waitSeconds(1)
-                .splineToSplineHeading(new Pose2d(-29,-11, Math.toRadians(135)), Math.toRadians(0))
+                .splineToSplineHeading(new Pose2d(-28,-11, Math.toRadians(135)), Math.toRadians(0))
                 .build());
 
         // Follow trajectory 0 from start to tall pole
@@ -325,8 +325,8 @@ public class RRTesting extends OpMode {
                         drive.slideMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         drive.slideMotor.setVelocity(Constants.ARM_TPS);
                     })
-                    .splineToLinearHeading(new Pose2d((parkTarget == 0 ? -56 : (parkTarget == 2 ? -12 : -36)),
-                            -17, Math.toRadians(315)), Math.toRadians(180))
+                    .splineToLinearHeading(new Pose2d((parkTarget == 0 ? -58 : (parkTarget == 2 ? -12 : -36)),
+                            -15, Math.toRadians(315)), Math.toRadians(180))
                     .build()
                 );
             }
