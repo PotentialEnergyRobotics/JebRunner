@@ -323,15 +323,13 @@ public class JebRunner extends MecanumDrive {
 
     public void stopAllDriveMotors() {
         setWeightedDrivePower(new Pose2d(0,0,0));
-        update();
     }
 
     public void gyroDrive(double powerX, double powerY, double orientation) {
         double drive_direction = orientation - getRawExternalHeading();
         // Rotate 45 degrees to transform Omni -> Mecanum
-        Vector2d mec = new Vector2d(powerX, powerY).rotated(Math.toRadians(45));
-        setWeightedDrivePower(new Pose2d(mec.getX(), mec.getY(), drive_direction));
-        update();
+        Vector2d mec = new Vector2d(-powerX, -powerY).rotated(Math.toRadians(45));
+        setWeightedDrivePower(new Pose2d(mec.getX(), mec.getY(), Constants.POWER_PER_P * drive_direction));
     }
 
     //endregion

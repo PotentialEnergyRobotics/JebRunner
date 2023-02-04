@@ -116,7 +116,7 @@ public class Constants {
     public static final int MID_ARM_POS = 4120;
     public static final int HIGH_ARM_POS = 6000;
 
-    public static final double POWER_PER_P = 0.01;
+    public static final double POWER_PER_P = 0.5;
 
     public static final int SLIDE_VEL = 1500;
 

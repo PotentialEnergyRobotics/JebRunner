@@ -46,11 +46,13 @@ public class RRTesting extends OpMode {
         Pose2d motion4StartPose = new Pose2d(-16, -24, Math.toRadians(45));
         trajectories.add(drive.trajectorySequenceBuilder(motion4StartPose)
                 .setTangent(Math.toRadians(90))
-                .addDisplacementMarker(2, () -> {
-                    drive.slideMotor.setPower(-Constants.MIN_ARM_POWER);
+                .addDisplacementMarker(5, () -> {
+                    drive.slideMotor.setTargetPosition(Constants.LOW_ARM_POS );
+                    drive.slideMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    drive.slideMotor.setVelocity(Constants.ARM_TPS);
                 })
                 .splineTo(new Vector2d(-24,-15), Math.toRadians(180))
-                .splineToSplineHeading(new Pose2d(-60,-12, Math.toRadians(225)), Math.toRadians(180))
+                .splineToSplineHeading(new Pose2d(-64,-10, Math.toRadians(225)), Math.toRadians(180))
                 .build());
 
         // Follow trajectory 0 from start to tall pole
@@ -89,7 +91,7 @@ public class RRTesting extends OpMode {
 
             @Override
             public void run() {
-                drive.gyroDrive(0.1,0, Math.toRadians(-90));
+                drive.gyroDrive(-0.1,0, Math.toRadians(-90));
             }
 
             @Override
@@ -112,7 +114,7 @@ public class RRTesting extends OpMode {
                 // go forward if too close to rear pole, backward if too far
                 drive.gyroDrive(
                         0,
-                        -0.1*Math.signum(POLE_DIST_CM - dist),
+                        0.1*Math.signum(POLE_DIST_CM - dist),
                         Math.toRadians(-90));
             }
 

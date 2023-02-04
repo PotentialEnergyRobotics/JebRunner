@@ -21,5 +21,7 @@ public class DistanceSensorTesting extends OpMode {
     public void loop() {
         telemetry.addData("distance", jeb.distanceSensorBack.getDistance(DistanceUnit.CM));
         telemetry.addData("IMU yaw", jeb.getRawExternalHeading());
+
+        jeb.gyroDrive(0.1,0.1,Math.toRadians(90));
     }
 }
