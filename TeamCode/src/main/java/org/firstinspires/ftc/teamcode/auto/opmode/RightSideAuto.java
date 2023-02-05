@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.auto.opmode;
 
-import static java.lang.Thread.sleep;
-
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
@@ -13,7 +11,6 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
@@ -27,7 +24,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Autonomous(group = "drive")
-public class LeftSideAuto extends OpMode {
+public class RightSideAuto extends OpMode {
     private JebRunner drive;
 
     private int stage = 0;
@@ -42,9 +39,9 @@ public class LeftSideAuto extends OpMode {
 
     private double POLE_DIST_CM = 28.0;
 
-    private static final int X_MOD = 1; // -1
-    private static final int TAN_MOD = 0; // -180
-    private static final int HEAD_MOD = 0; // -270
+    private static final int X_MOD = -1; // -1
+    private static final int TAN_MOD = -180; // -180
+    private static final int HEAD_MOD = -270; // -270
 
     @Override
     public void init() {
