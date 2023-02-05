@@ -356,6 +356,20 @@ public class JebRunner extends MecanumDrive {
         setWeightedDrivePower(new Pose2d(mec.getX(), mec.getY(), Constants.POWER_PER_P * drive_direction));
     }
 
+    public void driveVelocity(double powerX, double powerY, double turnPower) {
+        front.setVelocity((powerX + turnPower) * Constants.TICKS_PER_POWER);
+        left.setVelocity((powerY - turnPower) * Constants.TICKS_PER_POWER);
+        back.setVelocity((powerX - turnPower) * Constants.TICKS_PER_POWER);
+        right.setVelocity((powerY + turnPower) * Constants.TICKS_PER_POWER);
+    }
+
+    public void holdMotor(DcMotorEx holdMotor, int pos, int vel) {
+        holdMotor.setTargetPosition(pos);
+        holdMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        holdMotor.setVelocity(vel);
+    }
+
+
     //endregion
 
 }

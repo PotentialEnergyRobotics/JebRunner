@@ -1,13 +1,16 @@
 package org.firstinspires.ftc.teamcode.auto.opmode;
 
+import static java.lang.Thread.sleep;
+
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
-import com.acmerobotics.roadrunner.trajectory.MarkerCallback;
-import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
@@ -24,7 +27,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Autonomous(group = "drive")
-public class RRTesting extends OpMode {
+public class LeftSideAuto extends OpMode {
     private JebRunner drive;
 
     private int stage = 0;
@@ -43,6 +46,7 @@ public class RRTesting extends OpMode {
     @Override
     public void init() {
         drive = new JebRunner(hardwareMap);
+        Telemetry telemetry = new MultipleTelemetry(this.telemetry, FtcDashboard.getInstance().getTelemetry());
 
         camfr = hardwareMap.get(WebcamName.class, "cam fr");
         vulo = drive.initVuforia(hardwareMap, camfr);
@@ -57,7 +61,7 @@ public class RRTesting extends OpMode {
         trajectories.add(drive.trajectorySequenceBuilder(startPose)
                 .setTangent(Math.toRadians(90))
                 .splineTo(new Vector2d(-17, -58), Math.toRadians(45))
-                .splineToSplineHeading(new Pose2d(-15, -27, Math.toRadians(45)), Math.toRadians(90))
+                .splineToSplineHeading(new Pose2d(-15, -29, Math.toRadians(45)), Math.toRadians(90))
                 .build());
 //        JebRunner.getVelocityConstraint(Constants.MAX_VEL * 0.6, Constants.MAX_ANG_VEL, Constants.TRACK_WIDTH),
 //                JebRunner.getAccelerationConstraint(Constants.MAX_ACCEL))
@@ -75,13 +79,13 @@ public class RRTesting extends OpMode {
                     drive.slideMotor.setVelocity(Constants.ARM_TPS);
                 })
                 .splineTo(new Vector2d(-24,-15), Math.toRadians(180))
-                .splineToSplineHeading(new Pose2d(-64,-10, Math.toRadians(225)), Math.toRadians(180))
+                .splineToSplineHeading(new Pose2d(-60,-10, Math.toRadians(225)), Math.toRadians(180))
                 .build());
 
         trajectories.add(drive.trajectorySequenceBuilder(trajectories.get(1).end())
                 .setTangent(Math.toRadians(0))
                 .waitSeconds(1)
-                .splineToSplineHeading(new Pose2d(-28,-11, Math.toRadians(135)), Math.toRadians(0))
+                .splineToSplineHeading(new Pose2d(-26,-11, Math.toRadians(135)), Math.toRadians(0))
                 .build());
 
         // Follow trajectory 0 from start to tall pole
@@ -120,7 +124,7 @@ public class RRTesting extends OpMode {
 
             @Override
             public void run() {
-                drive.gyroDrive(-0.1,0, Math.toRadians(-90));
+                drive.gyroDrive(-0.1,0, drive.getRawExternalHeading());
             }
 
             @Override
@@ -144,7 +148,7 @@ public class RRTesting extends OpMode {
                 drive.gyroDrive(
                         0,
                         0.1*Math.signum(POLE_DIST_CM - dist),
-                        Math.toRadians(-90));
+                        drive.getRawExternalHeading());
             }
 
             @Override
@@ -181,6 +185,103 @@ public class RRTesting extends OpMode {
         motions.add(new Motion() {
             @Override
             public boolean isEnd() {
+                return drive.limitSlide.isPressed();
+            }
+
+            @Override
+            public void init() {
+                drive.setPoseEstimate(motion4StartPose);
+                drive.followTrajectorySequence(trajectories.get(1));
+                drive.slideMotor.setPower(-.4);
+
+            }
+
+            @Override
+            public void run() { }
+
+            @Override
+            public void cleanup() {
+                drive.slideMotor.setPower(0);
+
+            }
+        });
+
+        // Align with cone stack
+        motions.add(new Motion() {
+            boolean isEnd = false;
+            @Override
+            public boolean isEnd() {
+                return isEnd || drive.intakeDistanceSensor.getDistance(DistanceUnit.CM) < 25;
+            }
+
+            @Override
+            public void init() {
+                runtime.reset();
+            }
+
+            @Override
+            public void run() {
+                telemetry.addData("intake distance", drive.intakeDistanceSensor.getDistance(DistanceUnit.CM));
+                if (runtime.milliseconds() < 1000) {
+                    drive.gyroDrive(
+                            0.08,
+                            0,
+                            drive.getRawExternalHeading());
+                }
+                if (runtime.milliseconds() >= 1000 && runtime.milliseconds() < 3000) {
+                    drive.gyroDrive(
+                            -0.1,
+                            0,
+                            drive.getRawExternalHeading());
+                }
+                if (runtime.milliseconds() >= 3000 && runtime.milliseconds() < 4000) {
+                    drive.gyroDrive(
+                            0.08,
+                            0,
+                            drive.getRawExternalHeading());
+                }
+                if (runtime.milliseconds() > 4000) {
+                    drive.stopAllDriveMotors();
+                    isEnd = true;
+                }
+            }
+
+            @Override
+            public void cleanup() {
+                drive.stopAllDriveMotors();
+
+                drive.slideMotor.setTargetPosition(Constants.PICKUP_ARM_POS);
+                drive.slideMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                drive.slideMotor.setVelocity(Constants.ARM_TPS);
+            }
+        });
+
+        motions.add(new Motion() {
+            @Override
+            public boolean isEnd() {
+                return runtime.seconds() > 1.3;
+            }
+
+            @Override
+            public void init() {
+                runtime.seconds();
+            }
+
+            @Override
+            public void run() {
+
+            }
+
+            @Override
+            public void cleanup() {
+
+            }
+        });
+
+        // Cone pickup and slide
+        motions.add(new Motion() {
+            @Override
+            public boolean isEnd() {
                 return drive.limitSlide.isPressed()
                         || drive.intakeDistanceSensor.getDistance(DistanceUnit.CM) < Constants.INTAKE_CONE_DISTANCE
                         || runtime.seconds() > 4;
@@ -188,9 +289,6 @@ public class RRTesting extends OpMode {
 
             @Override
             public void init() {
-                drive.setPoseEstimate(motion4StartPose);
-                drive.followTrajectorySequence(trajectories.get(1));
-
                 runtime.reset();
 
                 drive.slideMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -248,7 +346,7 @@ public class RRTesting extends OpMode {
 
             @Override
             public void run() {
-                drive.gyroDrive(-0.1,0, Math.toRadians(0));
+                drive.gyroDrive(-0.1,0, drive.getRawExternalHeading());
             }
 
             @Override
@@ -272,7 +370,7 @@ public class RRTesting extends OpMode {
                 drive.gyroDrive(
                         0,
                         0.1*Math.signum(POLE_DIST_CM - dist),
-                        Math.toRadians(0));
+                        drive.getRawExternalHeading());
             }
 
             @Override
