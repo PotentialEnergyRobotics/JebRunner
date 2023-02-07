@@ -8,12 +8,13 @@ import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.drive.Constants;
+import org.firstinspires.ftc.teamcode.drive.Jeb;
 import org.firstinspires.ftc.teamcode.drive.JebRunner;
 import org.firstinspires.ftc.teamcode.teleop.ButtonState;
 
 @TeleOp(name="JebbyOp")
 public class JebbyOp extends OpMode {
-    private JebRunner jeb;
+    private Jeb jeb;
 
     private ButtonState backButtonToggle;
     private ButtonState rightBumperToggle;
@@ -34,7 +35,8 @@ public class JebbyOp extends OpMode {
 
     @Override
     public void init() {
-        jeb = new JebRunner(hardwareMap);
+        jeb = new Jeb(hardwareMap, telemetry);
+        jeb.awake();
 
         jeb.slideMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         jeb.slideMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -75,7 +77,7 @@ public class JebbyOp extends OpMode {
 
 
         if (gamepad1.x) {
-//            jeb.resetAngle();
+            jeb.resetAngle();
         }
         if (gamepad1.y) {
             if (Math.abs(driveX) > Math.abs(driveY)) {
@@ -86,7 +88,7 @@ public class JebbyOp extends OpMode {
         }
 
         if (backButtonToggle.buttonState) {
-//            jeb.driveFOD(driveX, driveY, driveTurn);
+            jeb.driveFOD(driveX, driveY, driveTurn);
         }
         else {
             jeb.driveVelocity(driveX, driveY, driveTurn);

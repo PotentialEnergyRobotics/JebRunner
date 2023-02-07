@@ -31,6 +31,7 @@ import com.acmerobotics.roadrunner.trajectory.constraints.ProfileAccelerationCon
 import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryAccelerationConstraint;
 import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryVelocityConstraint;
 import com.qualcomm.hardware.lynx.LynxModule;
+import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -87,10 +88,15 @@ public class JebRunner extends MecanumDrive {
     public DcMotorEx slideMotor;
     public CRServo clawServoA, clawServoB;
     public TouchSensor limitSlide;
-    public DistanceSensor intakeDistanceSensor, distanceSensorBack;
+    public DistanceSensor intakeDistanceSensor, distanceSensorBack, distanceSensorFront;
 
     private IMU imu;
     private VoltageSensor batteryVoltageSensor;
+
+    public RevBlinkinLedDriver revBlinkin;
+
+    RevBlinkinLedDriver blinkinLedDriver;
+    RevBlinkinLedDriver.BlinkinPattern pattern;
 
     public JebRunner(HardwareMap hardwareMap) {
         //region Omni Drive
@@ -153,6 +159,11 @@ public class JebRunner extends MecanumDrive {
 
         intakeDistanceSensor = hardwareMap.get(DistanceSensor.class, "intake sensor");
         distanceSensorBack = hardwareMap.get(DistanceSensor.class, "back");
+        distanceSensorFront = hardwareMap.get(DistanceSensor.class, "front");
+
+//        blinkinLedDriver = hardwareMap.get(RevBlinkinLedDriver.class, "blinkin");
+//        blinkinLedDriver.setPattern(RevBlinkinLedDriver.BlinkinPattern.RAINBOW_RAINBOW_PALETTE);
+
         //endregion
     }
 
