@@ -127,7 +127,7 @@ public class LeftSideAuto extends OpMode {
 
             @Override
             public void run() {
-                drive.gyroDrive(-0.12 * X_MOD,0, drive.getRawExternalHeading());
+                drive.gyroDrive(-0.12 * X_MOD,0, Math.toRadians(X_MOD * (-90)));
             }
 
             @Override
@@ -151,7 +151,7 @@ public class LeftSideAuto extends OpMode {
                 drive.gyroDrive(
                         0,
                         0.1*Math.signum(POLE_DIST_CM - dist),
-                        drive.getRawExternalHeading());
+                        Math.toRadians(X_MOD * (-90)));
             }
 
             @Override
@@ -168,13 +168,13 @@ public class LeftSideAuto extends OpMode {
             @Override
             public void init() {
                 runtime.reset();
-                drive.clawServoA.setPower(-Constants.DEFAULT_ARM_POWER);
-                drive.clawServoB.setPower(Constants.DEFAULT_ARM_POWER);
+                drive.clawServoA.setPower(Constants.DEFAULT_ARM_POWER);
+                drive.clawServoB.setPower(-Constants.DEFAULT_ARM_POWER);
             }
 
             @Override
             public void run() {
-
+                drive.stopAllDriveMotors();
             }
 
             @Override
@@ -185,7 +185,7 @@ public class LeftSideAuto extends OpMode {
         });
 
 
-        // Follow trajectory 1 from tall pole to cone stack
+        // Follow trajectory 1 from tall pole to cone stack, and pick up cone
         motions.add(new Motion() {
             @Override
             public boolean isEnd() {
@@ -204,8 +204,8 @@ public class LeftSideAuto extends OpMode {
                 drive.slideMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                 drive.slideMotor.setPower(-.4);
 
-                drive.clawServoA.setPower(Constants.DEFAULT_ARM_POWER);
-                drive.clawServoB.setPower(-Constants.DEFAULT_ARM_POWER);
+                drive.clawServoA.setPower(-Constants.DEFAULT_ARM_POWER);
+                drive.clawServoB.setPower(Constants.DEFAULT_ARM_POWER);
             }
 
             @Override
@@ -328,7 +328,7 @@ public class LeftSideAuto extends OpMode {
 
             @Override
             public void run() {
-                drive.gyroDrive(-0.1 * X_MOD,0, drive.getRawExternalHeading());
+                drive.gyroDrive(-0.1 * X_MOD,0, 0);
             }
 
             @Override
@@ -352,7 +352,7 @@ public class LeftSideAuto extends OpMode {
                 drive.gyroDrive(
                         0,
                         0.1*Math.signum(POLE_DIST_CM - dist),
-                        drive.getRawExternalHeading());
+                        0);
             }
 
             @Override
@@ -369,13 +369,13 @@ public class LeftSideAuto extends OpMode {
             @Override
             public void init() {
                 runtime.reset();
-                drive.clawServoA.setPower(-Constants.DEFAULT_ARM_POWER);
-                drive.clawServoB.setPower(Constants.DEFAULT_ARM_POWER);
+                drive.clawServoA.setPower(Constants.DEFAULT_ARM_POWER);
+                drive.clawServoB.setPower(-Constants.DEFAULT_ARM_POWER);
             }
 
             @Override
             public void run() {
-
+                drive.stopAllDriveMotors();
             }
 
             @Override
