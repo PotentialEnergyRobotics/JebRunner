@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.teleop.opmode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
@@ -75,6 +76,9 @@ public class JebbyOp extends OpMode {
         driveY = (Math.pow(-gamepad1.left_stick_y, 3) * driveSpeedModifier) + (-gamepad2.right_stick_y * Constants.ARM_DRIVE_POWER);
         driveTurn = -Math.pow(gamepad1.right_stick_x, 3) * driveSpeedModifier;
 
+        PIDFCoefficients pidf = jeb.leftMotor.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
+        telemetry.addData("P,I,D,F", "%.04f, %.04f, %.04f, %.04f",
+                pidf.p, pidf.i, pidf.d, pidf.f);
 
         if (gamepad1.x) {
             jeb.resetAngle();
@@ -159,12 +163,12 @@ public class JebbyOp extends OpMode {
         /*if (gamepad2.left_bumper || gamepad2.right_bumper) {
             if (!intakeMoving and distance sensor sees nothing){
                 intakeMoving = true; //intake grabs cone
-                jeb.clawServoA.setPower(Constants.DEFAULT_ARM_POWER);
-                jeb.clawServoB.setPower(-Constants.DEFAULT_ARM_POWER);
-            } else if (!intakeMoving and distance sensor sees something) {
-                intakeMoving = true; //intake lets go of cone
                 jeb.clawServoA.setPower(-Constants.DEFAULT_ARM_POWER);
                 jeb.clawServoB.setPower(Constants.DEFAULT_ARM_POWER);
+            } else if (!intakeMoving and distance sensor sees something) {
+                intakeMoving = true; //intake lets go of cone
+                jeb.clawServoA.setPower(Constants.DEFAULT_ARM_POWER);
+                jeb.clawServoB.setPower(-Constants.DEFAULT_ARM_POWER);
             }
         } else {
             intakeMoving = false;
@@ -177,12 +181,12 @@ public class JebbyOp extends OpMode {
         if ((gamepad2.left_bumper && gamepad2.right_bumper) ||
                 ((gamepad2.left_bumper || gamepad2.right_bumper) &&
                         jeb.intakeDistanceSensor.getDistance(DistanceUnit.MM) > 65)) {
-            jeb.clawServoA.setPower(Constants.DEFAULT_ARM_POWER);
-            jeb.clawServoB.setPower(-Constants.DEFAULT_ARM_POWER);
-        }
-        else if (gamepad2.left_trigger > 0.4 || gamepad2.right_trigger > 0.4) {
             jeb.clawServoA.setPower(-Constants.DEFAULT_ARM_POWER);
             jeb.clawServoB.setPower(Constants.DEFAULT_ARM_POWER);
+        }
+        else if (gamepad2.left_trigger > 0.4 || gamepad2.right_trigger > 0.4) {
+            jeb.clawServoA.setPower(Constants.DEFAULT_ARM_POWER);
+            jeb.clawServoB.setPower(-Constants.DEFAULT_ARM_POWER);
         }
         else {
             jeb.clawServoA.setPower(0);
