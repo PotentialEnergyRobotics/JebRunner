@@ -44,6 +44,7 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
+import com.qualcomm.robotcore.util.Range;
 
 import org.apache.commons.math3.analysis.function.Pow;
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
@@ -361,7 +362,7 @@ public class JebRunner extends MecanumDrive {
     }
 
     public void gyroDrive(double powerX, double powerY, double orientation) {
-        double drive_direction = orientation - getRawExternalHeading();
+        double drive_direction = Range.clip(orientation - getRawExternalHeading(), -Constants.DEFAULT_DRIVE_POWER, Constants.DEFAULT_DRIVE_POWER);
         // Rotate 45 degrees to transform Omni -> Mecanum
         Vector2d mec = new Vector2d(-powerX, -powerY).rotated(Math.toRadians(45));
         setWeightedDrivePower(new Pose2d(mec.getX(), mec.getY(), Constants.POWER_PER_P * drive_direction));

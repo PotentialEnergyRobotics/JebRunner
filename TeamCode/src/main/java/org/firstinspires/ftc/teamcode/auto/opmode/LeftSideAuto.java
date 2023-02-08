@@ -49,7 +49,7 @@ public class LeftSideAuto extends OpMode {
     @Override
     public void init() {
         drive = new JebRunner(hardwareMap);
-        Telemetry telemetry = new MultipleTelemetry(this.telemetry, FtcDashboard.getInstance().getTelemetry());
+        telemetry = new MultipleTelemetry(this.telemetry, FtcDashboard.getInstance().getTelemetry());
 
         camfr = hardwareMap.get(WebcamName.class, "cam fr");
         vulo = drive.initVuforia(hardwareMap, camfr);
@@ -82,7 +82,7 @@ public class LeftSideAuto extends OpMode {
                     drive.slideMotor.setVelocity(Constants.ARM_TPS);
                 })
                 .splineTo(new Vector2d(-24 * X_MOD,-15), Math.toRadians(180 + HEAD_MOD))
-                .splineToSplineHeading(new Pose2d(-65 * X_MOD,-12, Math.toRadians(X_MOD * (225 + HEAD_MOD))), Math.toRadians(X_MOD * (180 + HEAD_MOD)))
+                .splineToSplineHeading(new Pose2d(-66 * X_MOD,-11, Math.toRadians(X_MOD * (225 + HEAD_MOD))), Math.toRadians(X_MOD * (180 + HEAD_MOD)))
                 .build());
 
         trajectories.add(drive.trajectorySequenceBuilder(trajectories.get(1).end())
@@ -456,6 +456,15 @@ public class LeftSideAuto extends OpMode {
 
     @Override
     public void loop() {
+        // region telem
+        telemetry.addData("distance sensor back", drive.distanceSensorBack.getDistance(DistanceUnit.CM));
+        telemetry.addData("distance sensor intake", drive.intakeDistanceSensor.getDistance(DistanceUnit.CM));
+        telemetry.addData("slide height", drive.slideMotor.getCurrentPosition());
+
+        telemetry.addData("IMU YAW", Math.toDegrees(drive.getRawExternalHeading()));
+        //endregion
+
+        //region motions
         motions.get(stage).run();
 
         if (motions.get(stage).isEnd()) {
@@ -463,5 +472,6 @@ public class LeftSideAuto extends OpMode {
             if (stage < motions.size() - 1) motions.get(++stage).init();
             else stop();
         }
+        //endregion
     }
 }

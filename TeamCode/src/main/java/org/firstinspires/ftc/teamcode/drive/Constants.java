@@ -111,10 +111,10 @@ public class Constants {
     public static final int MIN_ARM_SLIDE_POS = 0;
     public static final int MAX_ARM_SLIDE_POS = 3500;
 
-    public static final int PICKUP_ARM_POS = (int)(450 * 0.8);
-    public static final int LOW_ARM_POS = (int)(2500 * 0.8);
-    public static final int MID_ARM_POS = (int)(4120 * 0.8);
-    public static final int HIGH_ARM_POS = (int)(6000 * 0.8);
+    public static final int PICKUP_ARM_POS = 184;
+    public static final int LOW_ARM_POS = 1552;
+    public static final int MID_ARM_POS = 2662;
+    public static final int HIGH_ARM_POS = 3848;
 
     public static final double POWER_PER_P = 0.5;
 
