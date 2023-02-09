@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.auto.opmode;
 
-import static java.lang.Thread.sleep;
-
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
@@ -10,10 +8,8 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
@@ -31,20 +27,23 @@ public class LeftSideAuto extends OpMode {
     private JebRunner drive;
 
     private int stage = 0;
-    private ArrayList<Motion> motions = new ArrayList<>();
-    private ArrayList<TrajectorySequence> trajectories = new ArrayList<>();
+    private final ArrayList<Motion> motions = new ArrayList<>();
+    private final ArrayList<TrajectorySequence> trajectories = new ArrayList<>();
 
     private int parkTarget = 1;
-    private List<String> coneLabelsArrayList = new ArrayList<String>(Arrays.asList(Constants.CONE_LABELS));
+    private final List<String> coneLabelsArrayList = new ArrayList<String>(Arrays.asList(Constants.CONE_LABELS));
     private VuforiaLocalizer vulo;
     private TFObjectDetector tfod;
     private WebcamName camfr;
 
-    private double POLE_DIST_CM = 28.0;
+    private final double POLE_DIST_CM = 28;
 
     private static final int X_MOD = 1; // -1
     private static final int TAN_MOD = 0; // -180
     private static final int HEAD_MOD = 0; // -270
+    private static final int POLE_OFFSET = 0; // -270
+
+    double dist;
 
     @Override
     public void init() {
@@ -63,8 +62,8 @@ public class LeftSideAuto extends OpMode {
         Pose2d startPose = new Pose2d(-36 * X_MOD, -64.5, Math.toRadians(X_MOD * (135 + HEAD_MOD)));
         trajectories.add(drive.trajectorySequenceBuilder(startPose)
                 .setTangent(Math.toRadians(X_MOD * (90 + TAN_MOD)))
-                .splineTo(new Vector2d(-17 * X_MOD, -58), Math.toRadians(X_MOD * (45 + HEAD_MOD)))
-                .splineToSplineHeading(new Pose2d(-15 * X_MOD, -29, Math.toRadians(X_MOD * (45 + HEAD_MOD))), Math.toRadians(X_MOD * (90 + HEAD_MOD)))
+                .splineTo(new Vector2d(-17 * X_MOD, -58), Math.toRadians(X_MOD * (45 + TAN_MOD)))
+                .splineToSplineHeading(new Pose2d(-15 * X_MOD, -29 + POLE_OFFSET, Math.toRadians(X_MOD * (45 + HEAD_MOD))), Math.toRadians(X_MOD * (90 + HEAD_MOD)))
                 .build());
 //        JebRunner.getVelocityConstraint(Constants.MAX_VEL * 0.6, Constants.MAX_ANG_VEL, Constants.TRACK_WIDTH),
 //                JebRunner.getAccelerationConstraint(Constants.MAX_ACCEL))
@@ -77,18 +76,18 @@ public class LeftSideAuto extends OpMode {
         trajectories.add(drive.trajectorySequenceBuilder(motion4StartPose)
                 .setTangent(Math.toRadians(X_MOD * (90 + TAN_MOD)))
                 .addDisplacementMarker(2, () -> {
-                    drive.slideMotor.setTargetPosition(Constants.LOW_ARM_POS);
+                    drive.slideMotor.setTargetPosition(Constants.PICKUP_ARM_POS + 200);
                     drive.slideMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     drive.slideMotor.setVelocity(Constants.ARM_TPS);
                 })
-                .splineTo(new Vector2d(-24 * X_MOD,-15), Math.toRadians(180 + HEAD_MOD))
-                .splineToSplineHeading(new Pose2d(-66 * X_MOD,-11, Math.toRadians(X_MOD * (225 + HEAD_MOD))), Math.toRadians(X_MOD * (180 + HEAD_MOD)))
+                .splineTo(new Vector2d(-24 * X_MOD,-15), Math.toRadians(180 + TAN_MOD))
+                .splineToSplineHeading(new Pose2d(-63.5 * X_MOD,-9, Math.toRadians(X_MOD * (225 + HEAD_MOD))), Math.toRadians(X_MOD * (180 + TAN_MOD)))
                 .build());
 
         trajectories.add(drive.trajectorySequenceBuilder(trajectories.get(1).end())
                 .setTangent(Math.toRadians(X_MOD * (0 + TAN_MOD)))
                 .waitSeconds(1)
-                .splineToSplineHeading(new Pose2d(-26 * X_MOD,-11, Math.toRadians(X_MOD * (135 + HEAD_MOD))), Math.toRadians(X_MOD * (0 + HEAD_MOD)))
+                .splineToSplineHeading(new Pose2d(POLE_OFFSET + -26 * X_MOD,-11, Math.toRadians(X_MOD * (135 + HEAD_MOD))), Math.toRadians(X_MOD * (0 + TAN_MOD)))
                 .build());
 
         // Follow trajectory 0 from start to tall pole
@@ -119,7 +118,8 @@ public class LeftSideAuto extends OpMode {
         motions.add(new Motion() {
             @Override
             public boolean isEnd() {
-                return drive.distanceSensorBack.getDistance(DistanceUnit.CM) < 50;
+                dist = drive.distanceSensorBack.getDistance(DistanceUnit.CM);
+                return dist < 50;
             }
 
             @Override
@@ -134,28 +134,33 @@ public class LeftSideAuto extends OpMode {
             public void cleanup() { drive.stopAllDriveMotors(); }
         });
 
-        // Place Minion above pole
+        // Place Minion over pole
         motions.add(new Motion() {
             @Override
             public boolean isEnd() {
-                return Math.abs(drive.distanceSensorBack.getDistance(DistanceUnit.CM) - POLE_DIST_CM) < 1;
+                return true;
             }
 
             @Override
-            public void init() { }
+            public void init() {
+                Pose2d lastStartPose = new Pose2d(-12 * X_MOD, -24, Math.toRadians(X_MOD * (45 + HEAD_MOD)));
+
+                drive.setPoseEstimate(lastStartPose);
+                drive.followTrajectorySequence(drive.trajectorySequenceBuilder(lastStartPose)
+                        .lineTo(new Vector2d(X_MOD * (-12 + (POLE_DIST_CM - dist)/2.54), -24))
+                        .build()
+                );
+            }
 
             @Override
             public void run() {
-                double dist = drive.distanceSensorBack.getDistance(DistanceUnit.CM);
-                // go forward if too close to rear pole, backward if too far
-                drive.gyroDrive(
-                        0,
-                        0.1*Math.signum(POLE_DIST_CM - dist),
-                        Math.toRadians(X_MOD * (-90)));
+
             }
 
             @Override
-            public void cleanup() { drive.stopAllDriveMotors(); }
+            public void cleanup() {
+
+            }
         });
 
         // Release cone
@@ -221,7 +226,8 @@ public class LeftSideAuto extends OpMode {
                 drive.clawServoB.setPower(0);
             }
         });
-// region no
+
+        // region no
 //        // Align with cone stack
 //        motions.add(new Motion() {
 //            boolean isEnd = false;
@@ -318,7 +324,8 @@ public class LeftSideAuto extends OpMode {
         motions.add(new Motion() {
             @Override
             public boolean isEnd() {
-                return drive.distanceSensorBack.getDistance(DistanceUnit.CM) < 50;
+                dist = drive.distanceSensorBack.getDistance(DistanceUnit.CM);
+                return dist < 50;
             }
 
             @Override
@@ -335,28 +342,34 @@ public class LeftSideAuto extends OpMode {
             public void cleanup() { }
         });
 
-        // Place Minion above pole
+
+        // Place Minion over pole
         motions.add(new Motion() {
             @Override
             public boolean isEnd() {
-                return Math.abs(drive.distanceSensorBack.getDistance(DistanceUnit.CM) - POLE_DIST_CM) < 1;
+                return true;
             }
 
             @Override
-            public void init() { }
+            public void init() {
+                Pose2d lastStartPose = new Pose2d(-24 * X_MOD, -12, Math.toRadians(X_MOD * (135 + HEAD_MOD)));
+
+                drive.setPoseEstimate(lastStartPose);
+                drive.followTrajectorySequence(drive.trajectorySequenceBuilder(lastStartPose)
+                        .lineTo(new Vector2d(-24 * X_MOD,-12 + (POLE_DIST_CM - dist)/2.54))
+                        .build()
+                );
+            }
 
             @Override
             public void run() {
-                double dist = drive.distanceSensorBack.getDistance(DistanceUnit.CM);
-                // go forward if too close to rear pole, backward if too far
-                drive.gyroDrive(
-                        0,
-                        0.1*Math.signum(POLE_DIST_CM - dist),
-                        0);
+
             }
 
             @Override
-            public void cleanup() { drive.stopAllDriveMotors(); }
+            public void cleanup() {
+
+            }
         });
 
         // Release cone
@@ -406,7 +419,7 @@ public class LeftSideAuto extends OpMode {
                         drive.slideMotor.setVelocity(Constants.ARM_TPS);
                     })
                     .splineToLinearHeading(new Pose2d((parkTarget == 0 ? -58 * X_MOD : (parkTarget == 2 ? -12 * X_MOD : -36 * X_MOD)),
-                            -15, Math.toRadians(X_MOD * (315 + HEAD_MOD))), Math.toRadians(X_MOD * (180 + HEAD_MOD)))
+                            -15, Math.toRadians(X_MOD * (315 + HEAD_MOD))), Math.toRadians(X_MOD * (180 + TAN_MOD)))
                     .build()
                 );
             }
@@ -447,6 +460,8 @@ public class LeftSideAuto extends OpMode {
             }
             telemetry.update();
         }
+        telemetry.addData("IMU YAW", Math.toDegrees(drive.getRawExternalHeading()));
+
     }
 
     @Override
@@ -461,7 +476,6 @@ public class LeftSideAuto extends OpMode {
         telemetry.addData("distance sensor intake", drive.intakeDistanceSensor.getDistance(DistanceUnit.CM));
         telemetry.addData("slide height", drive.slideMotor.getCurrentPosition());
 
-        telemetry.addData("IMU YAW", Math.toDegrees(drive.getRawExternalHeading()));
         //endregion
 
         //region motions

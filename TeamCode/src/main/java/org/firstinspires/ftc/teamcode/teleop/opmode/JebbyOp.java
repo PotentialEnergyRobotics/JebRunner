@@ -10,7 +10,6 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.drive.Constants;
 import org.firstinspires.ftc.teamcode.drive.Jeb;
-import org.firstinspires.ftc.teamcode.drive.JebRunner;
 import org.firstinspires.ftc.teamcode.teleop.ButtonState;
 
 @TeleOp(name="JebbyOp")
@@ -32,7 +31,7 @@ public class JebbyOp extends OpMode {
     private double slideY;
     private int targetArmPos = 0;
 
-    private ElapsedTime motorHoldTime = new ElapsedTime();
+    private final ElapsedTime motorHoldTime = new ElapsedTime();
 
     @Override
     public void init() {
@@ -72,9 +71,9 @@ public class JebbyOp extends OpMode {
         driveSpeedModifier = Range.clip(driveSpeedModifier,  Constants.MIN_DRIVE_POWER, 1);
         telemetry.addData("Move speed modifier", driveSpeedModifier);
 
-        driveX = (Math.pow(-gamepad1.left_stick_x, 3) * driveSpeedModifier) + (-gamepad2.right_stick_x * Constants.ARM_DRIVE_POWER);
-        driveY = (Math.pow(-gamepad1.left_stick_y, 3) * driveSpeedModifier) + (-gamepad2.right_stick_y * Constants.ARM_DRIVE_POWER);
-        driveTurn = -Math.pow(gamepad1.right_stick_x, 3) * driveSpeedModifier;
+        driveX = (Math.pow(-gamepad1.left_stick_x, 1) * driveSpeedModifier) + (-gamepad2.right_stick_x * Constants.ARM_DRIVE_POWER);
+        driveY = (Math.pow(-gamepad1.left_stick_y, 1) * driveSpeedModifier) + (-gamepad2.right_stick_y * Constants.ARM_DRIVE_POWER);
+        driveTurn = -Math.pow(gamepad1.right_stick_x, 1) * driveSpeedModifier;
 
         PIDFCoefficients pidf = jeb.leftMotor.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
         telemetry.addData("P,I,D,F", "%.04f, %.04f, %.04f, %.04f",
