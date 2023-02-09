@@ -36,7 +36,7 @@ public class LeftSideAuto2 extends OpMode {
     private TFObjectDetector tfod;
     private WebcamName camfr;
 
-    private final double POLE_DIST_CM = 28;
+    private final double POLE_DIST_CM = 29;
 
     private static final int X_MOD = 1; // -1
     private static final int TAN_MOD = 0; // -180
@@ -212,7 +212,7 @@ public class LeftSideAuto2 extends OpMode {
         motions.add(new Motion() {
             @Override
             public boolean isEnd() {
-                return drive.distanceSensorFront.getDistance(DistanceUnit.CM) < 15;
+                return drive.distanceSensorFront.getDistance(DistanceUnit.CM) < 17;
             }
 
             @Override
@@ -242,7 +242,7 @@ public class LeftSideAuto2 extends OpMode {
                 runtime.reset();
 
                 drive.slideMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                drive.slideMotor.setPower(-.4);
+                drive.slideMotor.setPower(-.3);
 
                 drive.clawServoA.setPower(-Constants.DEFAULT_ARM_POWER);
                 drive.clawServoB.setPower(Constants.DEFAULT_ARM_POWER);
@@ -374,7 +374,7 @@ public class LeftSideAuto2 extends OpMode {
                             drive.slideMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                             drive.slideMotor.setVelocity(Constants.ARM_TPS);
                         })
-                        .splineToLinearHeading(new Pose2d((parkTarget == 0 ? -58 * X_MOD : (parkTarget == 2 ? -12 * X_MOD : -36 * X_MOD)),
+                        .splineToLinearHeading(new Pose2d((parkTarget == 0 ? -60 * X_MOD : (parkTarget == 2 ? -12 * X_MOD : -36 * X_MOD)),
                                 -12, Math.toRadians(X_MOD * (315 + HEAD_MOD))), Math.toRadians(X_MOD * (180 + TAN_MOD)))
                         .build()
                 );
