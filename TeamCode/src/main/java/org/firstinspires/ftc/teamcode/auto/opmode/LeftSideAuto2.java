@@ -1,4 +1,4 @@
-    package org.firstinspires.ftc.teamcode.auto.opmode;
+package org.firstinspires.ftc.teamcode.auto.opmode;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
@@ -64,13 +64,10 @@ public class LeftSideAuto2 extends OpMode {
         trajectories.add(drive.trajectorySequenceBuilder(startPose)
                 .setTangent(Math.toRadians(X_MOD * (90 + TAN_MOD)))
                 .splineTo(new Vector2d(-17 * X_MOD, -58), Math.toRadians(X_MOD * (45 + TAN_MOD)))
-                .splineToSplineHeading(new Pose2d(-15 * X_MOD, -29 + POLE_OFFSET, Math.toRadians(X_MOD * (45 + HEAD_MOD))), Math.toRadians(X_MOD * (90 + HEAD_MOD)))
+                .splineToSplineHeading(new Pose2d(-15 * X_MOD, -29 + POLE_OFFSET, Math.toRadians(X_MOD * (45 + HEAD_MOD))), Math.toRadians(X_MOD * (90 + TAN_MOD)))
                 .build());
 //        JebRunner.getVelocityConstraint(Constants.MAX_VEL * 0.6, Constants.MAX_ANG_VEL, Constants.TRACK_WIDTH),
 //                JebRunner.getAccelerationConstraint(Constants.MAX_ACCEL))
-
-        // todos
-        // add failsafe to still park if does not detect cone on intake cone from cone stack
 
         // Trajectory from tall pole to cone stack
         Pose2d firstPoleStartPose = new Pose2d(-9 * X_MOD, -24, Math.toRadians(X_MOD * (45 + HEAD_MOD)));
@@ -81,7 +78,7 @@ public class LeftSideAuto2 extends OpMode {
                     drive.slideMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     drive.slideMotor.setVelocity(Constants.ARM_TPS);
                 })
-                .splineTo(new Vector2d(-24 * X_MOD,-12), Math.toRadians(180 + TAN_MOD))
+                .splineTo(new Vector2d(-24 * X_MOD,-15), Math.toRadians(X_MOD * (180 + TAN_MOD)))
                 .splineToSplineHeading(new Pose2d(-58 * X_MOD,-12, Math.toRadians(X_MOD * (225 + HEAD_MOD))), Math.toRadians(X_MOD * (180 + TAN_MOD)))
                 .build());
 
