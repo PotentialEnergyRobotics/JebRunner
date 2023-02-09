@@ -71,9 +71,12 @@ public class JebbyOp extends OpMode {
         driveSpeedModifier = Range.clip(driveSpeedModifier,  Constants.MIN_DRIVE_POWER, 1);
         telemetry.addData("Move speed modifier", driveSpeedModifier);
 
-        driveX = (Math.pow(-gamepad1.left_stick_x, 1) * driveSpeedModifier) + (-gamepad2.right_stick_x * Constants.ARM_DRIVE_POWER);
-        driveY = (Math.pow(-gamepad1.left_stick_y, 1) * driveSpeedModifier) + (-gamepad2.right_stick_y * Constants.ARM_DRIVE_POWER);
-        driveTurn = -Math.pow(gamepad1.right_stick_x, 1) * driveSpeedModifier;
+        //driveX = (Math.pow(-gamepad1.left_stick_x, 3) * driveSpeedModifier) + (-gamepad2.right_stick_x * Constants.ARM_DRIVE_POWER);
+        //driveY = (Math.pow(-gamepad1.left_stick_y, 3) * driveSpeedModifier) + (-gamepad2.right_stick_y * Constants.ARM_DRIVE_POWER);
+        //driveTurn = -Math.pow(gamepad1.right_stick_x, 3) * driveSpeedModifier;
+        driveX = (-gamepad1.left_stick_x * driveSpeedModifier) + (-gamepad2.right_stick_x * Constants.ARM_DRIVE_POWER);
+        driveY = (-gamepad1.left_stick_y * driveSpeedModifier) + (-gamepad2.right_stick_y * Constants.ARM_DRIVE_POWER);
+        driveTurn = -gamepad1.right_stick_x * driveSpeedModifier;
 
         PIDFCoefficients pidf = jeb.leftMotor.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
         telemetry.addData("P,I,D,F", "%.04f, %.04f, %.04f, %.04f",
