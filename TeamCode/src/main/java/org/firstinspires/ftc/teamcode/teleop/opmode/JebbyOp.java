@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.teleop.opmode;
 
+import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -59,6 +60,8 @@ public class JebbyOp extends OpMode {
 
     @Override
     public void loop() {
+        // debugTelemetry();
+
         // drive
         backButtonToggle.update(gamepad1.back);
         telemetry.addData("FOD", backButtonToggle.buttonState);
@@ -71,16 +74,19 @@ public class JebbyOp extends OpMode {
         driveSpeedModifier = Range.clip(driveSpeedModifier,  Constants.MIN_DRIVE_POWER, 1);
         telemetry.addData("Move speed modifier", driveSpeedModifier);
 
-        //driveX = (Math.pow(-gamepad1.left_stick_x, 3) * driveSpeedModifier) + (-gamepad2.right_stick_x * Constants.ARM_DRIVE_POWER);
-        //driveY = (Math.pow(-gamepad1.left_stick_y, 3) * driveSpeedModifier) + (-gamepad2.right_stick_y * Constants.ARM_DRIVE_POWER);
-        //driveTurn = -Math.pow(gamepad1.right_stick_x, 3) * driveSpeedModifier;
-        driveX = (-gamepad1.left_stick_x * driveSpeedModifier) + (-gamepad2.right_stick_x * Constants.ARM_DRIVE_POWER);
-        driveY = (-gamepad1.left_stick_y * driveSpeedModifier) + (-gamepad2.right_stick_y * Constants.ARM_DRIVE_POWER);
-        driveTurn = -gamepad1.right_stick_x * driveSpeedModifier;
+        driveX = -gamepad1.left_stick_x;
+        driveX *= driveX * driveX;
+        driveX *= driveSpeedModifier;
+        driveX += (-gamepad2.right_stick_x * Constants.ARM_DRIVE_POWER);
 
-        PIDFCoefficients pidf = jeb.leftMotor.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
-        telemetry.addData("P,I,D,F", "%.04f, %.04f, %.04f, %.04f",
-                pidf.p, pidf.i, pidf.d, pidf.f);
+        driveY = -gamepad1.left_stick_y;
+        driveY *= driveY * driveY;
+        driveY *= driveSpeedModifier;
+        driveY += (-gamepad2.right_stick_y * Constants.ARM_DRIVE_POWER);
+
+        driveTurn = -gamepad1.right_stick_x;
+        driveTurn *= driveTurn * driveTurn;
+        driveTurn *= driveSpeedModifier;
 
         if (gamepad1.x) {
             jeb.resetAngle();
@@ -114,13 +120,7 @@ public class JebbyOp extends OpMode {
         else if (gamepad2.dpad_up) targetArmPos = Constants.HIGH_ARM_POS;
         else if (gamepad2.right_stick_y == 0 && targetArmPos == 0) targetArmPos = jeb.slideMotor.getCurrentPosition();
 
-        telemetry.addData("slideY", slideY);
-        telemetry.addData("limit pressed", jeb.limitSlide.isPressed());
-        telemetry.addData("motor hold time", motorHoldTime);
-        telemetry.addData("slide pos", jeb.slideMotor.getCurrentPosition());
-
         if (gamepad2.b && (!jeb.limitSlide.isPressed())) {
-            telemetry.addLine("B Pressed! Full driver control, be careful going up!!!");
             jeb.slideMotor.setPower(slideY);
         }
         else {
@@ -138,7 +138,7 @@ public class JebbyOp extends OpMode {
                 }
                 if ((!jeb.limitSlide.isPressed() || slideY > 0) &&
                         (jeb.slideMotor.getCurrentPosition() > Constants.MIN_ARM_SLIDE_POS || slideY > 0)) {
-                    if (jeb.slideMotor.getCurrentPosition() > Constants.PICKUP_ARM_POS || slideY < 0) {
+                    if (jeb.slideMotor.getCurrentPosition() > Constants.PICKUP_ARM_POS || slideY > 0) {
                         jeb.slideMotor.setPower(Math.pow(slideY, 1));
                     } else {
                         jeb.slideMotor.setPower(Math.pow(slideY, 1)*0.5);
@@ -147,7 +147,6 @@ public class JebbyOp extends OpMode {
             }
             else {
                 if (motorHoldTime.seconds() > 15) {
-                    telemetry.addLine("shutting motor down");
                     jeb.slideMotor.setPower(0);
                 }
                 else {
@@ -156,29 +155,8 @@ public class JebbyOp extends OpMode {
             }
         }
 
-
-
-
         // claw
         rightBumperToggle.update(gamepad2.right_bumper);
-        // test program
-        /*if (gamepad2.left_bumper || gamepad2.right_bumper) {
-            if (!intakeMoving and distance sensor sees nothing){
-                intakeMoving = true; //intake grabs cone
-                jeb.clawServoA.setPower(-Constants.DEFAULT_ARM_POWER);
-                jeb.clawServoB.setPower(Constants.DEFAULT_ARM_POWER);
-            } else if (!intakeMoving and distance sensor sees something) {
-                intakeMoving = true; //intake lets go of cone
-                jeb.clawServoA.setPower(Constants.DEFAULT_ARM_POWER);
-                jeb.clawServoB.setPower(-Constants.DEFAULT_ARM_POWER);
-            }
-        } else {
-            intakeMoving = false;
-            jeb.clawServoA.setPower(0);
-            jeb.clawServoB.setPower(0);
-        }*/
-
-        telemetry.addData("distance from minion", jeb.intakeDistanceSensor.getDistance(DistanceUnit.MM));
 
         if ((gamepad2.left_bumper && gamepad2.right_bumper) ||
                 ((gamepad2.left_bumper || gamepad2.right_bumper) &&
@@ -195,8 +173,17 @@ public class JebbyOp extends OpMode {
             jeb.clawServoB.setPower(0);
         }
 
+        if (jeb.distanceSensorFront.getDistance(DistanceUnit.CM) > 20 &&
+            jeb.distanceSensorFront.getDistance(DistanceUnit.CM) < 30) {
+            jeb.blinkinLedDriver.setPattern(RevBlinkinLedDriver.BlinkinPattern.RAINBOW_RAINBOW_PALETTE);
+        }
     }
 
-
+    private void debugTelemetry() {
+        telemetry.addData("slideY", slideY);
+        telemetry.addData("limit pressed", jeb.limitSlide.isPressed());
+        telemetry.addData("motor hold time", motorHoldTime);
+        telemetry.addData("slide pos", jeb.slideMotor.getCurrentPosition());
+    }
 
 }

@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.drive;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -48,6 +49,8 @@ public class Jeb {
 
     private double drive_direction;
 
+    public RevBlinkinLedDriver blinkinLedDriver;
+
     public Jeb(HardwareMap hardwareMap, Telemetry telemetry) {
         this.hardwareMap = hardwareMap;
         this.telemetry = telemetry;
@@ -87,6 +90,8 @@ public class Jeb {
         backMotor.setDirection(DcMotorEx.Direction.REVERSE);
         leftMotor.setDirection(DcMotorEx.Direction.REVERSE);
         rightMotor.setDirection(DcMotorEx.Direction.FORWARD);
+
+        blinkinLedDriver = hardwareMap.get(RevBlinkinLedDriver.class, "blinkin");
     }
 
     public void slideZero() {

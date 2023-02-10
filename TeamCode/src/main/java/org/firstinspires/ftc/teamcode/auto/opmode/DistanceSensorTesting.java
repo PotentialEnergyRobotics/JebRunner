@@ -9,6 +9,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.drive.JebRunner;
 
 @Autonomous(group = "drive")
+@Disabled
 public class DistanceSensorTesting extends OpMode {
     JebRunner jeb;
 
@@ -20,8 +21,9 @@ public class DistanceSensorTesting extends OpMode {
 
     @Override
     public void loop() {
-        telemetry.addData("distance", jeb.distanceSensorBack.getDistance(DistanceUnit.CM));
-        telemetry.addData("distance", jeb.intakeDistanceSensor.getDistance(DistanceUnit.CM));
+        telemetry.addData("front distance", jeb.distanceSensorFront.getDistance(DistanceUnit.CM));
+        telemetry.addData("back distance", jeb.distanceSensorBack.getDistance(DistanceUnit.CM));
+        telemetry.addData("intake distance", jeb.intakeDistanceSensor.getDistance(DistanceUnit.CM));
         telemetry.addData("IMU yaw", jeb.getRawExternalHeading());
 
 //        jeb.gyroDrive(0.1,0.1,Math.toRadians(90));

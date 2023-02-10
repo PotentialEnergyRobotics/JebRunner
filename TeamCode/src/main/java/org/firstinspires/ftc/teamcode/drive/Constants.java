@@ -92,7 +92,7 @@ public class Constants {
 //    public static double MAX_ACCEL = 52.48180821614297;
 //    public static double MAX_ANG_VEL = Math.toRadians(140.25002251507732);
 //    public static double MAX_ANG_ACCEL = Math.toRadians(184.02607784577722);
-    public static double MAX_VEL = 27;
+    public static double MAX_VEL = 30;
     public static double MAX_ACCEL = 30;
     public static double MAX_ANG_VEL = Math.toRadians(120);
     public static double MAX_ANG_ACCEL = Math.toRadians(120);
@@ -114,7 +114,7 @@ public class Constants {
     public static final int PICKUP_ARM_POS = 184;
     public static final int LOW_ARM_POS = 1552;
     public static final int MID_ARM_POS = 2662;
-    public static final int HIGH_ARM_POS = 3848;
+    public static final int HIGH_ARM_POS = 3850;
 
     public static final double POWER_PER_P = 0.5;
 
